@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Odisha & Utkal Grameen Bank - Growth Comparison Dashboard</title>
+  
+  <!-- Include Chart.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  
+  <style>
+    :root {
+      --primary-blue: #1a73e8;
+      --primary-green: #0f9d58;
+      --positive-green: #34a853;
+      --negative-red: #ea4335;
+      --neutral-yellow: #fbbc04;
+      --bg-color: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-primary: #333333;
+      --text-secondary: #666666;
+      --border-color: #e0e0e0;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: 20px;
+    }
+    
+    .header {
+      background: linear-gradient(to right, var(--primary-blue), #4285f4);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    
+    .header h1 {
+      margin: 0 0 10px 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    .header h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+    
+    .header p {
+      margin-top: 10px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .controls {
+      background-color: var(--card-bg);
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .control-group {
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      background-color: var(--card-bg);
+      transition: border-color 0.3s;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+    }
+    
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 500px), 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .chart-container {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s;
+    }
+    
+    .chart-container:hover {
+      transform: translateY(-5px);
+    }
+    
+    .chart-container.full-width {
+      grid-column: 1 / -1;
+    }
+    
+    .chart-title {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: var(--text-primary);
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .chart-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      font-weight: normal;
+    }
+    
+    .chart {
+      height: 300px;
+      position: relative;
+    }
+    
+    .legend {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 10px;
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+    }
+    
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      margin-right: 5px;
+    }
+    
+    .insights-container {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    
+    .insights-title {
+      font-size: 18px;
+      margin-bottom: 15px;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    
+    .insights-list {
+      list-style-type: none;
+    }
+    
+    .insights-list li {
+      margin-bottom: 10px;
+      padding-left: 20px;
+      position: relative;
+    }
+    
+    .insights-list li:before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--primary-blue);
+      font-weight: bold;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+      
+      .header h1 {
+        font-size: 20px;
+      }
+      
+      .header h2 {
+        font-size: 16px;
+      }
+    }
+    
+    /* Print styles */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      
+      .chart-container {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #eee;
+      }
+      
+      .controls {
+        display: none;
+      }
+      
+      .chart {
+        height: 250px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Odisha & Utkal Grameen Bank</h1>
+    <h2>Regional Office Growth Comparison Dashboard</h2>
+    <p>Analyzing growth from March 31, 2025 to May 15, 2025 and May 1, 2025 to May 15, 2025</p>
+  </div>
+  
+  <div class="controls">
+    <div class="control-group">
+      <label for="accountType">Account Type</label>
+      <select id="accountType" onchange="updateCharts()">
+        <option value="savings">Savings Accounts</option>
+        <option value="current">Current Accounts</option>
+        <option value="casa">CASA</option>
+        <option value="termDeposit" selected>Term Deposits</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label for="growthPeriod">Growth Period</label>
+      <select id="growthPeriod" onchange="updateCharts()">
+        <option value="growth31Mar">Growth 31.03.2025 → 15.05.2025</option>
+        <option value="growth01May">Growth 01.05.2025 → 15.05.2025</option>
+      </select>
+    </div>
+  </div>
+  
+  <div class="insights-container">
+    <h3 class="insights-title">Key Insights</h3>
+    <ul class="insights-list" id="keyInsights">
+      <!-- Insights will be populated dynamically via JavaScript -->
+    </ul>
+  </div>
+  
+  <div class="dashboard-grid">
+    <div class="chart-container">
+      <h3 class="chart-title">Regional Office Growth Comparison</h3>
+      <div class="chart">
+        <canvas id="barChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <h3 class="chart-title">OGB vs UGB Average Growth</h3>
+      <div class="chart">
+        <canvas id="bankComparisonChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <h3 class="chart-title">Overall Performance by Account Type</h3>
+      <div class="chart">
+        <canvas id="radarChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <h3 class="chart-title">Account Types Comparison</h3>
+      <div class="chart">
+        <canvas id="accountComparisonChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-container full-width">
+      <h3 class="chart-title">Top Performing Regional Offices - Term Deposit Growth</h3>
+      <div class="chart">
+        <canvas id="topPerformersChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <h3 class="chart-title">OGB - Account Type Distribution</h3>
+      <div class="chart">
+        <canvas id="ogbPieChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <h3 class="chart-title">UGB - Account Type Distribution</h3>
+      <div class="chart">
+        <canvas id="ugbPieChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="chart-container full-width">
+      <h3 class="chart-title">Branch Count by Regional Office</h3>
+      <div class="chart">
+        <canvas id="branchCountChart"></canvas>
+      </div>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <p>Data as of May 15, 2025 | Prepared for Senior Branch Manager</p>
+    <p>Odisha Grameen Bank & Utkal Grameen Bank Regional Office Comparison</p>
+  </div>
+  
+  <script>
+    // Bank data from Excel sheet
+    const ogbROs = [
+      {name: "BALASORE", bank: "OGB", branches: 83, savings: {growthFrom31Mar: -60.88, growthFrom01May: -19.10}, current: {growthFrom31Mar: -1.91, growthFrom01May: -1.06}, casa: {growthFrom31Mar: -62.79, growthFrom01May: -20.16}, termDeposit: {growthFrom31Mar: 0.48, growthFrom01May: -3.62}},
+      {name: "BARIPADA", bank: "OGB", branches: 49, savings: {growthFrom31Mar: -46.38, growthFrom01May: -28.97}, current: {growthFrom31Mar: -3.47, growthFrom01May: -0.64}, casa: {growthFrom31Mar: -49.85, growthFrom01May: -29.61}, termDeposit: {growthFrom31Mar: 2.52, growthFrom01May: 9.25}},
+      {name: "CHANDIKHOL", bank: "OGB", branches: 69, savings: {growthFrom31Mar: -28.43, growthFrom01May: -15.50}, current: {growthFrom31Mar: -1.94, growthFrom01May: -0.60}, casa: {growthFrom31Mar: -30.37, growthFrom01May: -16.10}, termDeposit: {growthFrom31Mar: 1.54, growthFrom01May: 0.28}},
+      {name: "CUTTACK", bank: "OGB", branches: 77, savings: {growthFrom31Mar: -48.31, growthFrom01May: -15.74}, current: {growthFrom31Mar: -2.70, growthFrom01May: -0.50}, casa: {growthFrom31Mar: -51.01, growthFrom01May: -16.24}, termDeposit: {growthFrom31Mar: 2.99, growthFrom01May: 0.67}},
+      {name: "DHENKANAL", bank: "OGB", branches: 62, savings: {growthFrom31Mar: -33.97, growthFrom01May: -7.19}, current: {growthFrom31Mar: -7.29, growthFrom01May: -3.44}, casa: {growthFrom31Mar: -41.26, growthFrom01May: -10.63}, termDeposit: {growthFrom31Mar: 8.03, growthFrom01May: 2.63}},
+      {name: "JASHIPUR", bank: "OGB", branches: 29, savings: {growthFrom31Mar: -17.41, growthFrom01May: -9.82}, current: {growthFrom31Mar: -0.35, growthFrom01May: -0.88}, casa: {growthFrom31Mar: -17.76, growthFrom01May: -10.70}, termDeposit: {growthFrom31Mar: 1.31, growthFrom01May: 0.07}},
+      {name: "KEONJHAR", bank: "OGB", branches: 48, savings: {growthFrom31Mar: -28.17, growthFrom01May: -14.69}, current: {growthFrom31Mar: -1.25, growthFrom01May: -0.38}, casa: {growthFrom31Mar: -29.42, growthFrom01May: -15.07}, termDeposit: {growthFrom31Mar: 3.46, growthFrom01May: 0.94}},
+      {name: "KHURDA", bank: "OGB", branches: 62, savings: {growthFrom31Mar: -52.50, growthFrom01May: -14.59}, current: {growthFrom31Mar: -9.53, growthFrom01May: -1.71}, casa: {growthFrom31Mar: -62.03, growthFrom01May: -16.30}, termDeposit: {growthFrom31Mar: 9.01, growthFrom01May: 1.65}},
+      {name: "PIPLI", bank: "OGB", branches: 67, savings: {growthFrom31Mar: -39.57, growthFrom01May: -13.24}, current: {growthFrom31Mar: -6.12, growthFrom01May: 1.02}, casa: {growthFrom31Mar: -45.69, growthFrom01May: -12.22}, termDeposit: {growthFrom31Mar: 5.35, growthFrom01May: -1.88}}
+    ];
+
+    const ugbROs = [
+      {name: "BARGARH", bank: "UGB", branches: 56, savings: {growthFrom31Mar: -47.23, growthFrom01May: -17.96}, current: {growthFrom31Mar: -4.65, growthFrom01May: -0.21}, casa: {growthFrom31Mar: -57.77, growthFrom01May: -15.62}, termDeposit: {growthFrom31Mar: 1.77, growthFrom01May: 0.26}},
+      {name: "BERHAMPUR", bank: "UGB", branches: 59, savings: {growthFrom31Mar: -57.78, growthFrom01May: -15.62}, current: {growthFrom31Mar: -5.63, growthFrom01May: -1.10}, casa: {growthFrom31Mar: -63.48, growthFrom01May: -22.27}, termDeposit: {growthFrom31Mar: 6.41, growthFrom01May: 0.75}},
+      {name: "BHAWANIPATNA", bank: "UGB", branches: 65, savings: {growthFrom31Mar: -54.59, growthFrom01May: -26.00}, current: {growthFrom31Mar: -4.40, growthFrom01May: -0.70}, casa: {growthFrom31Mar: -54.59, growthFrom01May: -26.00}, termDeposit: {growthFrom31Mar: 5.48, growthFrom01May: 1.28}},
+      {name: "BOLANGIR", bank: "UGB", branches: 63, savings: {growthFrom31Mar: -63.48, growthFrom01May: -22.27}, current: {growthFrom31Mar: -5.43, growthFrom01May: -2.01}, casa: {growthFrom31Mar: -40.96, growthFrom01May: -19.10}, termDeposit: {growthFrom31Mar: 7.74, growthFrom01May: 1.01}},
+      {name: "JEYPORE", bank: "UGB", branches: 51, savings: {growthFrom31Mar: -40.96, growthFrom01May: -19.10}, current: {growthFrom31Mar: -2.65, growthFrom01May: -1.84}, casa: {growthFrom31Mar: -32.46, growthFrom01May: -10.10}, termDeposit: {growthFrom31Mar: 5.43, growthFrom01May: -0.02}},
+      {name: "PHULBANI", bank: "UGB", branches: 38, savings: {growthFrom31Mar: -32.46, growthFrom01May: -10.10}, current: {growthFrom31Mar: -0.36, growthFrom01May: -0.32}, casa: {growthFrom31Mar: -33.46, growthFrom01May: -11.85}, termDeposit: {growthFrom31Mar: 3.60, growthFrom01May: 1.14}},
+      {name: "RAYAGADA", bank: "UGB", branches: 36, savings: {growthFrom31Mar: -33.46, growthFrom01May: -11.85}, current: {growthFrom31Mar: -0.73, growthFrom01May: 0.21}, casa: {growthFrom31Mar: -28.50, growthFrom01May: -7.14}, termDeposit: {growthFrom31Mar: 1.54, growthFrom01May: -0.11}},
+      {name: "SAMBALPUR", bank: "UGB", branches: 65, savings: {growthFrom31Mar: -28.50, growthFrom01May: -7.14}, current: {growthFrom31Mar: -2.89, growthFrom01May: 0.42}, casa: {growthFrom31Mar: -47.23, growthFrom01May: -17.96}, termDeposit: {growthFrom31Mar: 4.52, growthFrom01May: 0.92}}
+    ];
+    
+    // Account types for selection
+    const accountTypes = [
+      { id: 'savings', name: 'Savings Accounts' },
+      { id: 'current', name: 'Current Accounts' },
+      { id: 'casa', name: 'CASA' },
+      { id: 'termDeposit', name: 'Term Deposits' }
+    ];
+    
+    // Colors for chart elements
+    const COLORS = {
+      OGB: 'rgba(26, 115, 232, 0.8)', // Blue
+      OGB_LIGHT: 'rgba(26, 115, 232, 0.2)',
+      UGB: 'rgba(15, 157, 88, 0.8)', // Green
+      UGB_LIGHT: 'rgba(15, 157, 88, 0.2)',
+      POSITIVE: 'rgba(52, 168, 83, 0.8)', // Green
+      NEGATIVE: 'rgba(234, 67, 53, 0.8)', // Red
+      NEUTRAL: 'rgba(251, 188, 4, 0.8)', // Yellow
+      pieColors: [
+        'rgba(26, 115, 232, 0.8)',
+        'rgba(15, 157, 88, 0.8)',
+        'rgba(233, 30, 99, 0.8)',
+        'rgba(156, 39, 176, 0.8)'
+      ]
+    };
+    
+    // Charts references
+    let barChart, bankComparisonChart, radarChart, accountComparisonChart, 
+        topPerformersChart, ogbPieChart, ugbPieChart, branchCountChart;
+    
+    // Helper function to format numbers
+    function formatNumber(value) {
+      return value.toFixed(2);
+    }
+    
+    // Create and update charts
+    function createCharts() {
+      // Get selected values
+      const accountType = document.getElementById('accountType').value;
+      const growthPeriod = document.getElementById('growthPeriod').value;
+      
+      // Update insights based on selection
+      updateInsights(accountType, growthPeriod);
+      
+      // Prepare data for bar chart
+      const barChartData = prepareBarChartData(accountType, growthPeriod);
+      
+      // Prepare data for bank comparison chart
+      const bankCompData = prepareBankComparisonData(accountType, growthPeriod);
+      
+      // Prepare data for radar chart
+      const radarData = prepareRadarData(growthPeriod);
+      
+      // Prepare data for account comparison chart
+      const accountCompData = prepareAccountComparisonData(growthPeriod);
+      
+      // Prepare data for top performers chart
+      const topPerformersData = prepareTopPerformersData('termDeposit', growthPeriod);
+      
+      // Prepare data for pie charts
+      const ogbPieData = preparePieChartData('OGB', growthPeriod);
+      const ugbPieData = preparePieChartData('UGB', growthPeriod);
+      
+      // Prepare data for branch count chart
+      const branchCountData = prepareBranchCountData();
+      
+      // Create bar chart
+      barChart = new Chart(
+        document.getElementById('barChart').getContext('2d'),
+        {
+          type: 'bar',
+          data: {
+            labels: barChartData.labels,
+            datasets: [{
+              label: 'Growth (%)',
+              data: barChartData.data,
+              backgroundColor: barChartData.colors,
+              borderColor: barChartData.borderColors,
+              borderWidth: 1
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.dataset.label}: ${formatNumber(context.raw)}%`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                },
+                title: {
+                  display: true,
+                  text: 'Growth (%)'
+                }
+              },
+              y: {
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              }
+            },
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart'
+            }
+          }
+        }
+      );
+      
+      // Create bank comparison chart
+      bankComparisonChart = new Chart(
+        document.getElementById('bankComparisonChart').getContext('2d'),
+        {
+          type: 'bar',
+          data: {
+            labels: bankCompData.labels,
+            datasets: [{
+              label: 'Average Growth (%)',
+              data: bankCompData.data,
+              backgroundColor: bankCompData.colors,
+              borderColor: bankCompData.borderColors,
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.dataset.label}: ${formatNumber(context.raw)}%`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              },
+              x: {
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              }
+            },
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart'
+            }
+          }
+        }
+      );
+      
+      // Create radar chart
+      radarChart = new Chart(
+        document.getElementById('radarChart').getContext('2d'),
+        {
+          type: 'radar',
+          data: {
+            labels: ['Savings', 'Current', 'CASA', 'Term Deposit'],
+            datasets: [
+              {
+                label: 'OGB',
+                data: radarData.ogb,
+                backgroundColor: COLORS.OGB_LIGHT,
+                borderColor: COLORS.OGB,
+                borderWidth: 2,
+                pointBackgroundColor: COLORS.OGB,
+                pointRadius: 4
+              },
+              {
+                label: 'UGB',
+                data: radarData.ugb,
+                backgroundColor: COLORS.UGB_LIGHT,
+                borderColor: COLORS.UGB,
+                borderWidth: 2,
+                pointBackgroundColor: COLORS.UGB,
+                pointRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            elements: {
+              line: {
+                tension: 0.2
+              }
+            },
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.dataset.label}: ${formatNumber(context.raw)}%`;
+                  }
+                }
+              }
+            },
+            scales: {
+              r: {
+                beginAtZero: true,
+                angleLines: {
+                  color: 'rgba(0, 0, 0, 0.1)'
+                },
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                },
+                ticks: {
+                  backdropColor: 'transparent',
+                  showLabelBackdrop: false
+                }
+              }
+            },
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart'
+            }
+          }
+        }
+      );
+      
+      // Create account comparison chart
+      accountComparisonChart = new Chart(
+        document.getElementById('accountComparisonChart').getContext('2d'),
+        {
+          type: 'bar',
+          data: {
+            labels: accountCompData.labels,
+            datasets: [
+              {
+                label: 'OGB',
+                data: accountCompData.ogb,
+                backgroundColor: COLORS.OGB,
+                borderColor: 'rgba(26, 115, 232, 1)',
+                borderWidth: 1
+              },
+              {
+                label: 'UGB',
+                data: accountCompData.ugb,
+                backgroundColor: COLORS.UGB,
+                borderColor: 'rgba(15, 157, 88, 1)',
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.dataset.label}: ${formatNumber(context.raw)}%`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                },
+                title: {
+                  display: true,
+                  text: 'Growth (%)'
+                }
+              },
+              x: {
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              }
+            },
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart'
+            }
+          }
+        }
+      );
+      
+      // Create top performers chart
+      topPerformersChart = new Chart(
+        document.getElementById('topPerformersChart').getContext('2d'),
+        {
+          type: 'bar',
+          data: {
+            labels: topPerformersData.labels,
+            datasets: [{
+              label: 'Growth (%)',
+              data: topPerformersData.data,
+              backgroundColor: topPerformersData.colors,
+              borderColor: topPerformersData.borderColors,
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top'
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.dataset.label}: ${formatNumber(context.raw)}%`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              },
+              x: {
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              }
+            },
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart'
+            }
+          }
+        }
+      );
+      
+      // Create OGB pie chart
+      ogbPieChart = new Chart(
+        document.getElementById('ogbPieChart').getContext('2d'),
+        {
+          type: 'pie',
+          data: {
+            labels: ogbPieData.labels,
+            datasets: [{
+              data: ogbPieData.data,
+              backgroundColor: COLORS.pieColors,
+              borderColor: 'white',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: {
+                  boxWidth: 12,
+                  padding: 15
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const value = context.raw;
+                    const total = context.dataset.data.reduce((acc, val) => acc + Math.abs(val), 0);
+                    const percentage = Math.abs(value) / total * 100;
+                    return `${context.label}: ${formatNumber(percentage)}%`;
+                  }
+                }
+              }
+            },
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart'
+            }
+          }
+        }
+      );
+      
+      // Create UGB pie chart
+      ugbPieChart = new Chart(
+        document.getElementById('ugbPieChart').getContext('2d'),
+        {
+          type: 'pie',
+          data: {
+            labels: ugbPieData.labels,
+            datasets: [{
+              data: ugbPieData.data,
+              backgroundColor: COLORS.pieColors,
+              borderColor: 'white',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: {
+                  boxWidth: 12,
+                  padding: 15
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const value = context.raw;
+                    const total = context.dataset.data.reduce((acc, val) => acc + Math.abs(val), 0);
+                    const percentage = Math.abs(value) / total * 100;
+                    return `${context.label}: ${formatNumber(percentage)}%`;
+                  }
+                }
+              }
+            },
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart'
+            }
+          }
+        }
+      );
+      
+      // Create branch count chart
+      branchCountChart = new Chart(
+        document.getElementById('branchCountChart').getContext('2d'),
+        {
+          type: 'bar',
+          data: {
+            labels: branchCountData.labels,
+            datasets: [
+              {
+                label: 'Number of Branches',
+                data: branchCountData.data,
+                backgroundColor: branchCountData.colors,
+                borderColor: 'rgba(0, 0, 0, 0.1)',
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `Branches: ${context.raw}`;
+                  },
+                  afterLabel: function(context) {
+                    const index = context.dataIndex;
+                    const bank = branchCountData.banks[index];
+                    return `Bank: ${bank}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                },
+                title: {
+                  display: true,
+                  text: 'Number of Branches'
+                }
+              },
+              x: {
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              }
+            },
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart'
+            }
+          }
+        }
+      );
+    }
+    
+    // Update charts when selection changes
+    function updateCharts() {
+      // Destroy existing charts
+      if (barChart) barChart.destroy();
+      if (bankComparisonChart) bankComparisonChart.destroy();
+      if (radarChart) radarChart.destroy();
+      if (accountComparisonChart) accountComparisonChart.destroy();
+      if (topPerformersChart) topPerformersChart.destroy();
+      if (ogbPieChart) ogbPieChart.destroy();
+      if (ugbPieChart) ugbPieChart.destroy();
+      if (branchCountChart) branchCountChart.destroy();
+      
+      // Create new charts
+      createCharts();
+    }
+    
+    // Function to update insights based on selection
+    function updateInsights(accountType, growthPeriod) {
+      const insightsList = document.getElementById('keyInsights');
+      insightsList.innerHTML = '';
+      
+      // Get account type name
+      const accountTypeName = accountTypes.find(type => type.id === accountType).name;
+      
+      // Get selected growth period
+      const periodLabel = growthPeriod === 'growth31Mar' ? 
+        'March 31 to May 15, 2025' : 'May 1 to May 15, 2025';
+      
+      // Calculate insights
+      const ogbAvg = calculateAverage(ogbROs, accountType, growthPeriod);
+      const ugbAvg = calculateAverage(ugbROs, accountType, growthPeriod);
+      
+      const topPerformer = findTopPerformer(accountType, growthPeriod);
+      const worstPerformer = findWorstPerformer(accountType, growthPeriod);
+      
+      const positiveGrowthOGB = countPositiveGrowth(ogbROs, accountType, growthPeriod);
+      const positiveGrowthUGB = countPositiveGrowth(ugbROs, accountType, growthPeriod);
+      
+      // Create insights
+      const insights = [
+        `<strong>${accountTypeName}:</strong> During the period ${periodLabel}, OGB showed an average growth of ${formatNumber(ogbAvg)}% while UGB showed ${formatNumber(ugbAvg)}%.`,
+        `<strong>Top performer:</strong> ${topPerformer.name} (${topPerformer.bank}) had the highest growth in ${accountTypeName.toLowerCase()} at ${formatNumber(topPerformer.growth)}%.`,
+        `<strong>Growth distribution:</strong> ${positiveGrowthOGB} out of ${ogbROs.length} OGB regional offices and ${positiveGrowthUGB} out of ${ugbROs.length} UGB regional offices showed positive growth in ${accountTypeName.toLowerCase()}.`
+      ];
+      
+      // Add special insight for term deposits
+      if (accountType === 'termDeposit') {
+        insights.push(`<strong>Term Deposits:</strong> Unlike other account types, term deposits generally show positive growth, with ${positiveGrowthOGB + positiveGrowthUGB} out of ${ogbROs.length + ugbROs.length} regional offices showing positive growth.`);
+      }
+      
+      // Add comparison between growth periods if term deposit
+      if (accountType === 'termDeposit') {
+        const currentPeriodPositive = positiveGrowthOGB + positiveGrowthUGB;
+        const otherPeriodPositive = growthPeriod === 'growth31Mar' ? 
+          countPositiveGrowth(ogbROs, accountType, 'growth01May') + countPositiveGrowth(ugbROs, accountType, 'growth01May') :
+          countPositiveGrowth(ogbROs, accountType, 'growth31Mar') + countPositiveGrowth(ugbROs, accountType, 'growth31Mar');
+        
+        const comparisonText = currentPeriodPositive >= otherPeriodPositive ?
+          `The current period shows stronger performance with ${currentPeriodPositive} offices in positive growth compared to ${otherPeriodPositive} in the other period.` :
+          `The other period shows stronger performance with ${otherPeriodPositive} offices in positive growth compared to ${currentPeriodPositive} in the current period.`;
+          
+        insights.push(`<strong>Period comparison:</strong> ${comparisonText}`);
+      }
+      
+      // Populate insights
+      insights.forEach(insight => {
+        const li = document.createElement('li');
+        li.innerHTML = insight;
+        insightsList.appendChild(li);
+      });
+    }
+    
+    // Helper functions to calculate statistics
+    function calculateAverage(banks, accountType, growthPeriod) {
+      const growthField = growthPeriod === 'growth31Mar' ? 'growthFrom31Mar' : 'growthFrom01May';
+      return banks.reduce((sum, ro) => sum + ro[accountType][growthField], 0) / banks.length;
+    }
+    
+    function findTopPerformer(accountType, growthPeriod) {
+      const growthField = growthPeriod === 'growth31Mar' ? 'growthFrom31Mar' : 'growthFrom01May';
+      
+      // Combine data from both banks
+      const allROs = [...ogbROs.map(ro => ({
+        name: ro.name,
+        bank: 'OGB',
+        growth: ro[accountType][growthField]
+      })), ...ugbROs.map(ro => ({
+        name: ro.name,
+        bank: 'UGB',
+        growth: ro[accountType][growthField]
+      }))];
+      
+      // Find top performer
+      return allROs.reduce((max, ro) => ro.growth > max.growth ? ro : max, allROs[0]);
+    }
+    
+    function findWorstPerformer(accountType, growthPeriod) {
+      const growthField = growthPeriod === 'growth31Mar' ? 'growthFrom31Mar' : 'growthFrom01May';
+      
+      // Combine data from both banks
+      const allROs = [...ogbROs.map(ro => ({
+        name: ro.name,
+        bank: 'OGB',
+        growth: ro[accountType][growthField]
+      })), ...ugbROs.map(ro => ({
+        name: ro.name,
+        bank: 'UGB',
+        growth: ro[accountType][growthField]
+      }))];
+      
+      // Find worst performer
+      return allROs.reduce((min, ro) => ro.growth < min.growth ? ro : min, allROs[0]);
+    }
+    
+    function countPositiveGrowth(banks, accountType, growthPeriod) {
+      const growthField = growthPeriod === 'growth31Mar' ? 'growthFrom31Mar' : 'growthFrom01May';
+      return banks.filter(ro => ro[accountType][growthField] > 0).length;
+    }
+    
+    // Helper functions to prepare chart data
+    function prepareBarChartData(accountType, growthPeriod) {
+      const growthField = growthPeriod === 'growth31Mar' ? 'growthFrom31Mar' : 'growthFrom01May';
+      
+      // Get data for each RO
+      const ogbData = ogbROs.map(ro => ({
+        name: ro.name,
+        growth: ro[accountType][growthField],
+        bank: 'OGB'
+      }));
+      
+      const ugbData = ugbROs.map(ro => ({
+        name: ro.name,
+        growth: ro[accountType][growthField],
+        bank: 'UGB'
+      }));
+      
+      // Combine and sort by growth
+      const combinedData = [...ogbData, ...ugbData].sort((a, b) => b.growth - a.growth);
+      
+      // Prepare chart data
+      const labels = combinedData.map(item => `${item.name} (${item.bank})`);
+      const data = combinedData.map(item => item.growth);
+      const colors = combinedData.map(item => 
+        item.growth >= 0 ? 
+          (item.bank === 'OGB' ? COLORS.OGB : COLORS.UGB) : 
+          COLORS.NEGATIVE
+      );
+      const borderColors = combinedData.map(item => 
+        item.growth >= 0 ? 
+          (item.bank === 'OGB' ? 'rgba(26, 115, 232, 1)' : 'rgba(15, 157, 88, 1)') : 
+          'rgba(234, 67, 53, 1)'
+      );
+      
+      return { labels, data, colors, borderColors };
+    }
+    
+    function prepareBankComparisonData(accountType, growthPeriod) {
+      const growthField = growthPeriod === 'growth31Mar' ? 'growthFrom31Mar' : 'growthFrom01May';
+      
+      // Calculate average growth for OGB
+      const ogbAvg = ogbROs.reduce((sum, ro) => sum + ro[accountType][growthField], 0) / ogbROs.length;
+      
+      // Calculate average growth for UGB
+      const ugbAvg = ugbROs.reduce((sum, ro) => sum + ro[accountType][growthField], 0) / ugbROs.length;
+      
+      const labels = ['OGB', 'UGB'];
+      const data = [ogbAvg, ugbAvg];
+      const colors = [
+        ogbAvg >= 0 ? COLORS.OGB : COLORS.NEGATIVE,
+        ugbAvg >= 0 ? COLORS.UGB : COLORS.NEGATIVE
+      ];
+      const borderColors = [
+        ogbAvg >= 0 ? 'rgba(26, 115, 232, 1)' : 'rgba(234, 67, 53, 1)',
+        ugbAvg >= 0 ? 'rgba(15, 157, 88, 1)' : 'rgba(234, 67, 53, 1)'
+      ];
+      
+      return { labels, data, colors, borderColors };
+    }
+    
+    function prepareRadarData(growthPeriod) {
+      const growthField = growthPeriod === 'growth31Mar' ? 'growthFrom31Mar' : 'growthFrom01May';
+      
+      // Calculate average growth for each account type for OGB
+      const ogbSavingsAvg = ogbROs.reduce((sum, ro) => sum + ro.savings[growthField], 0) / ogbROs.length;
+      const ogbCurrentAvg = ogbROs.reduce((sum, ro) => sum + ro.current[growthField], 0) / ogbROs.length;
+      const ogbCasaAvg = ogbROs.reduce((sum, ro) => sum + ro.casa[growthField], 0) / ogbROs.length;
+      const ogbTermDepositAvg = ogbROs.reduce((sum, ro) => sum + ro.termDeposit[growthField], 0) / ogbROs.length;
+      
+      // Calculate average growth for each account type for UGB
+      const ugbSavingsAvg = ugbROs.reduce((sum, ro) => sum + ro.savings[growthField], 0) / ugbROs.length;
+      const ugbCurrentAvg = ugbROs.reduce((sum, ro) => sum + ro.current[growthField], 0) / ugbROs.length;
+      const ugbCasaAvg = ugbROs.reduce((sum, ro) => sum + ro.casa[growthField], 0) / ugbROs.length;
+      const ugbTermDepositAvg = ugbROs.reduce((sum, ro) => sum + ro.termDeposit[growthField], 0) / ugbROs.length;
+      
+      return {
+        ogb: [ogbSavingsAvg, ogbCurrentAvg, ogbCasaAvg, ogbTermDepositAvg],
+        ugb: [ugbSavingsAvg, ugbCurrentAvg, ugbCasaAvg, ugbTermDepositAvg]
+      };
+    }
+    
+    function prepareAccountComparisonData(growthPeriod) {
+      const growthField = growthPeriod === 'growth31Mar' ? 'growthFrom31Mar' : 'growthFrom01May';
+      
+      // Calculate average growth for each account type for OGB
+      const ogbData = accountTypes.map(type => {
+        return ogbROs.reduce((sum, ro) => sum + ro[type.id][growthField], 0) / ogbROs.length;
+      });
+      
+      // Calculate average growth for each account type for UGB
+      const ugbData = accountTypes.map(type => {
+        return ugbROs.reduce((sum, ro) => sum + ro[type.id][growthField], 0) / ugbROs.length;
+      });
+      
+      return {
+        labels: accountTypes.map(type => type.name),
+        ogb: ogbData,
+        ugb: ugbData
+      };
+    }
+    
+    function prepareTopPerformersData(accountType, growthPeriod, count = 10) {
+      const growthField = growthPeriod === 'growth31Mar' ? 'growthFrom31Mar' : 'growthFrom01May';
+      
+      // Get data for each RO
+      const allData = [
+        ...ogbROs.map(ro => ({
+          name: ro.name,
+          growth: ro[accountType][growthField],
+          bank: 'OGB'
+        })),
+        ...ugbROs.map(ro => ({
+          name: ro.name,
+          growth: ro[accountType][growthField],
+          bank: 'UGB'
+        }))
+      ];
+      
+      // Sort by growth and get top performers
+      const topPerformers = allData
+        .filter(ro => ro.growth > 0)
+        .sort((a, b) => b.growth - a.growth)
+        .slice(0, count);
+      
+      // Prepare chart data
+      const labels = topPerformers.map(item => `${item.name} (${item.bank})`);
+      const data = topPerformers.map(item => item.growth);
+      const colors = topPerformers.map(item => 
+        item.bank === 'OGB' ? COLORS.OGB : COLORS.UGB
+      );
+      const borderColors = topPerformers.map(item => 
+        item.bank === 'OGB' ? 'rgba(26, 115, 232, 1)' : 'rgba(15, 157, 88, 1)'
+      );
+      
+      return { labels, data, colors, borderColors };
+    }
+    
+    function preparePieChartData(bank, growthPeriod) {
+      const growthField = growthPeriod === 'growth31Mar' ? 'growthFrom31Mar' : 'growthFrom01May';
+      const banks = bank === 'OGB' ? ogbROs : ugbROs;
+      
+      // Calculate total absolute growth for each account type
+      const data = accountTypes.map(type => {
+        return banks.reduce((sum, ro) => sum + Math.abs(ro[type.id][growthField]), 0);
+      });
+      
+      return {
+        labels: accountTypes.map(type => type.name),
+        data: data
+      };
+    }
+    
+    function prepareBranchCountData() {
+      // Get branch count for each RO
+      const ogbBranches = ogbROs.map(ro => ({
+        name: ro.name,
+        branches: ro.branches,
+        bank: 'OGB'
+      }));
+      
+      const ugbBranches = ugbROs.map(ro => ({
+        name: ro.name,
+        branches: ro.branches,
+        bank: 'UGB'
+      }));
+      
+      // Combine and sort by branch count
+      const combinedData = [...ogbBranches, ...ugbBranches]
+        .sort((a, b) => b.branches - a.branches);
+      
+      // Prepare chart data
+      const labels = combinedData.map(item => item.name);
+      const data = combinedData.map(item => item.branches);
+      const colors = combinedData.map(item => 
+        item.bank === 'OGB' ? COLORS.OGB : COLORS.UGB
+      );
+      const banks = combinedData.map(item => item.bank);
+      
+      return { labels, data, colors, banks };
+    }
+    
+    // Initialize charts on page load
+    document.addEventListener('DOMContentLoaded', createCharts);
+  </script>
+</body>
+</html>
